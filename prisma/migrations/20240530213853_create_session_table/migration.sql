@@ -33,7 +33,6 @@ CREATE TABLE "Session" (
      "locale" TEXT,
      "collaborator" BOOLEAN DEFAULT false,
      "emailVerified" BOOLEAN DEFAULT false,
-     "refreshToken" TEXT,
-     "refreshTokenExpires" TEXT,
+
      CONSTRAINT "Session_pkey" PRIMARY KEY ("id")
  );
