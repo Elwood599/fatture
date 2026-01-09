@@ -1,0 +1,24 @@
+
+api_version = "2025-07"
+
+[[extensions]]
+type = "ui_extension"
+name = "invoice"
+uid = "fa47d0a6-6e95-3def-3a7d-01fa0ff59ae8dd4ca60f"
+handle = "invoice"
+description = "Richiedi fattura"
+
+# module: path to the file that contains your extension’s source code
+# target: string that describes where your extension appears in POS
+[[extensions.targeting]]
+module = "./src/Action.tsx"
+target = "pos.order-details.action.menu-item.render"
+
+[[extensions.targeting]]
+module = "./src/Block.tsx"
+target = "pos.order-details.block.render"
+
+[[extensions.targeting]]
+module = "./src/Modal.tsx"
+target = "pos.order-details.action.render"
+
