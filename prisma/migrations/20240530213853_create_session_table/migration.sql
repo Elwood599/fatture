@@ -34,6 +34,6 @@ CREATE TABLE "Session" (
      "collaborator" BOOLEAN DEFAULT false,
      "emailVerified" BOOLEAN DEFAULT false,
      "refreshToken" TEXT,
-     "refreshTokenExpires" TEXT,
+     "refreshTokenExpires" TIMESTAMP WITHOUT TIME ZONE,
      CONSTRAINT "Session_pkey" PRIMARY KEY ("id")
  );
