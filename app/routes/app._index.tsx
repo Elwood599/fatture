@@ -38,7 +38,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const { admin } = await authenticate.admin(request);
   const form = await request.formData();
 
-  const first = 15;
+  const first = 30;
   const after = form.get("after")?.toString() || null;
 
   const query = `
@@ -278,6 +278,8 @@ export default function Index() {
         onSort={setSortSelected}
         queryValue={queryValue}
         onQueryChange={setQueryValue}
+        onQueryClear={() => {}}
+        onClearAll={() => {}}
         tabs={tabs}
         selected={selectedTab}
         onSelect={setSelectedTab}
