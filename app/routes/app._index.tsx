@@ -57,6 +57,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             createdAt
             unpaid
             displayFulfillmentStatus
+            fulfillments {
+              location {
+                name
+              }
+            }
             totalPriceSet {
               shopMoney {
                 amount
@@ -247,6 +252,7 @@ export default function Index() {
           <Badge>{o.displayFulfillmentStatus}</Badge>
         </IndexTable.Cell>
         <IndexTable.Cell>{o.lineItems.edges.length}</IndexTable.Cell>
+        <IndexTable.Cell>{o.fulfillments[0].location.name}</IndexTable.Cell>
         <IndexTable.Cell>
           {o.emitted?.value === "true" ? <Badge tone="success">Emitted</Badge> : <Badge tone="warning">Not emitted</Badge>}
         </IndexTable.Cell>
@@ -303,6 +309,7 @@ export default function Index() {
           { title: "Payment" },
           { title: "Fulfillment" },
           { title: "Items" },
+          { title: "Store" },
           { title: "Invoice" },
           { title: "Link" },
           { title: "Proforma" },
