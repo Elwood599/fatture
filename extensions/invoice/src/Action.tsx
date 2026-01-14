@@ -126,98 +126,105 @@ const MenuItem = () => {
   }, [api.order.id, api.order.customerId]);
 
   const handleRequestInvoice = async () => {
-    try {
-      setSubmitting(true);
-      const token = await api.session.getSessionToken();
 
-      let invoiceData: Record<string, string> = { requested: "true", emitted: "false" };
+  setSubmitting(true);
 
-      if (api.order.customerId) {
-        const customerQuery = `
-          query {
-            customer(id: "gid://shopify/Customer/${api.order.customerId}") {
-              metafields(namespace: "invoice", first: 50) {
-                edges {
-                  node {
-                    key
-                    value
-                  }
+  api.toast.show('Attendere...', { duration: 2000 });
+
+  try {
+    const token = await api.session.getSessionToken();
+
+    let invoiceData: Record<string, string> = {
+      requested: 'true',
+      emitted: 'false',
+    };
+
+    if (api.order.customerId) {
+      const customerQuery = `
+        query {
+          customer(id: "gid://shopify/Customer/${api.order.customerId}") {
+            metafields(namespace: "invoice", first: 50) {
+              edges {
+                node {
+                  key
+                  value
                 }
               }
-            }
-          }
-        `;
-
-        const customerResponse = await fetch('shopify:admin/api/graphql.json', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ query: customerQuery }),
-        });
-
-        const customerData = await customerResponse.json();
-        customerData.data.customer.metafields.edges.forEach((edge: any) => {
-          invoiceData[edge.node.key] = edge.node.value;
-        });
-      }
-
-      const invoiceDataJson = JSON.stringify(invoiceData);
-
-      const mutation = `
-        mutation {
-          metafieldsSet(metafields: [
-            {
-              ownerId: "gid://shopify/Order/${api.order.id}",
-              namespace: "invoice",
-              key: "requested",
-              type: "boolean",
-              value: "true"
-            },
-            {
-              ownerId: "gid://shopify/Order/${api.order.id}",
-              namespace: "invoice",
-              key: "invoice_data",
-              type: "json",
-              value: """${invoiceDataJson}"""
-            }
-          ]) {
-            metafields {
-              id
-              key
-              value
-            }
-            userErrors {
-              field
-              message
             }
           }
         }
       `;
 
-      const response = await fetch('shopify:admin/api/graphql.json', {
+      const customerResponse = await fetch('shopify:admin/api/graphql.json', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ query: mutation }),
+        body: JSON.stringify({ query: customerQuery }),
       });
 
-      const result = await response.json();
-
-      if (result.data.metafieldsSet.userErrors.length) {
-        throw new Error(result.data.metafieldsSet.userErrors[0].message);
-      }
-
-      setRequested(true);
-      api.action.presentModal();
-    } finally {
-      setSubmitting(false);
+      const customerData = await customerResponse.json();
+      customerData.data.customer.metafields.edges.forEach((edge: any) => {
+        invoiceData[edge.node.key] = edge.node.value;
+      });
     }
 
-  };
+    const invoiceDataJson = JSON.stringify(invoiceData);
+
+    const mutation = `
+      mutation {
+        metafieldsSet(metafields: [
+          {
+            ownerId: "gid://shopify/Order/${api.order.id}",
+            namespace: "invoice",
+            key: "requested",
+            type: "boolean",
+            value: "true"
+          },
+          {
+            ownerId: "gid://shopify/Order/${api.order.id}",
+            namespace: "invoice",
+            key: "invoice_data",
+            type: "json",
+            value: """${invoiceDataJson}"""
+          }
+        ]) {
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
+
+    const response = await fetch('shopify:admin/api/graphql.json', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ query: mutation }),
+    });
+
+    const result = await response.json();
+
+    if (result.data.metafieldsSet.userErrors.length) {
+      throw new Error(result.data.metafieldsSet.userErrors[0].message);
+    }
+
+    setRequested(true);
+
+    api.action.presentModal();
+
+  } catch (error) {
+    api.toast.show('Errore durante la richiesta fattura', { duration: 5000 });
+    console.error(error);
+  } finally {
+    setSubmitting(false);
+  }
+};
+
 
   return (
     <Button
