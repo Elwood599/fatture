@@ -22,16 +22,8 @@ const Block = () => {
   };
 
     useEffect(() => {
-  const interval = setInterval(async () => {
-    const data = await fetchInvoiceData(api);
-    setInvoiceState(data); // Aggiorno lo stato sempre
-  }, 5000);
-
-  // Caricamento iniziale
-  loadData();
-
-  return () => clearInterval(interval);
-}, [api.order.id, invoiceState.customerId]);
+      loadData();
+    }, [api.order.id, invoiceState.customerId]);
 
   const { requested, emitted, missingCustomerFields, customerId } = invoiceState;
 
@@ -44,7 +36,7 @@ const Block = () => {
         <Text>{emitted ? '✅ La fattura è stata emessa' : '❌ La fattura non è stata emessa'}</Text>
       </POSBlockRow>
 
-      {!customerId && (
+      {!api.order.customerId && (
         <>
           <POSBlockRow>
             <Badge text="Azione necessaria per richiedere la fattura" variant="warning" />
