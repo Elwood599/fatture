@@ -1,5 +1,9 @@
 import { Text, Screen, useApi, reactExtension, Navigator, ScrollView } from '@shopify/ui-extensions-react/point-of-sale';
-import { useEffect, useState } from 'react';
+import { useEffect, useState,  } from 'react';
+import {
+  Modal,
+  Frame,
+} from '@shopify/polaris';
 
 const InvoiceModal = () => {
   const api = useApi<'pos.order-details.action.render'>();
@@ -56,11 +60,11 @@ const InvoiceModal = () => {
     <Navigator>
       <Screen name="OrderDetailAction" title="Conferma richiesta fattura">
         <ScrollView>
-          
-          {status === 'loading' && <Text>Verifica stato richiesta fattura...</Text>}
-          {status === 'success' && <Text>✅ La fattura è stata richiesta correttamente!</Text>}
-          {status === 'error' && <Text>❌ Si è verificato un errore: la fattura non è stata richiesta.</Text>}
-          
+          <Frame>
+            <Modal
+              src="../../../app/${api.order.id}/proforma"
+            />
+          </Frame>
         </ScrollView>
       </Screen>
     </Navigator>

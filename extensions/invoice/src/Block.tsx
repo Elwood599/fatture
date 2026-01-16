@@ -1,11 +1,18 @@
 import { Text, useApi, reactExtension, POSBlock, POSBlockRow, Badge, Button } from '@shopify/ui-extensions-react/point-of-sale';
-import { useEffect, useState } from 'react';
-import { fetchInvoiceData } from '../../../app/invoiceApi';
+import { useEffect, useState, useRef } from 'react';
+import { fetchInvoiceData, InvoiceState } from '../../../app/invoiceApi';
 
 const Block = () => {
   const api = useApi<'pos.order-details.block.render'>();
-  const [invoiceState, setInvoiceState] = useState({ requested: false, emitted: null, missingCustomerFields: [] });
+  const [invoiceState, setInvoiceState] = useState<InvoiceState>({
+    requested: false,
+    emitted: null,
+    missingCustomerFields: [],
+    customerId: undefined,
+  });
   const [loading, setLoading] = useState(true);
+
+  const lastCustomerId = useRef(api.order.customerId || null);
 
   const loadData = async () => {
     setLoading(true);
@@ -14,14 +21,19 @@ const Block = () => {
     setLoading(false);
   };
 
-  useEffect(() => {
-    loadData();
-    // Opzionale: polling per aggiornare il blocco ogni 5s
-    const interval = setInterval(loadData, 5000);
-    return () => clearInterval(interval);
-  }, [api.order.id]);
+    useEffect(() => {
+  const interval = setInterval(async () => {
+    const data = await fetchInvoiceData(api);
+    setInvoiceState(data); // Aggiorno lo stato sempre
+  }, 5000);
 
-  const { requested, emitted, missingCustomerFields } = invoiceState;
+  // Caricamento iniziale
+  loadData();
+
+  return () => clearInterval(interval);
+}, [api.order.id, invoiceState.customerId]);
+
+  const { requested, emitted, missingCustomerFields, customerId } = invoiceState;
 
   return (
     <POSBlock>
@@ -32,7 +44,7 @@ const Block = () => {
         <Text>{emitted ? '✅ La fattura è stata emessa' : '❌ La fattura non è stata emessa'}</Text>
       </POSBlockRow>
 
-      {!api.order.customerId && (
+      {!customerId && (
         <>
           <POSBlockRow>
             <Badge text="Azione necessaria per richiedere la fattura" variant="warning" />
@@ -64,10 +76,10 @@ const Block = () => {
           </POSBlockRow>
           <POSBlockRow>
             <Button
-              title="Proforma"
+              title="Stampa proforma"
               onPress={async () => {
                 try {
-                  const url = `../../../app/${api.order.id}/proforma?pos=true`;
+                  const url = `../../../app/${api.order.id}/proforma`;
                   await api.print.print(url);
                 } catch (error) {
                   console.error('Errore stampa proforma', error);

@@ -3,6 +3,7 @@ export interface InvoiceState {
   requested: boolean;
   emitted: boolean | null;
   missingCustomerFields: string[];
+  customerId?: undefined;
 }
 
 export const REQUIRED_CUSTOMER_FIELDS_COMPANY = [
@@ -15,7 +16,7 @@ export const REQUIRED_CUSTOMER_FIELDS_COMPANY = [
 ];
 
 export const fetchInvoiceData = async (api: any): Promise<InvoiceState> => {
-  if (!api.order.id) return { requested: false, emitted: null, missingCustomerFields: [] };
+  if (!api.order.id) return { requested: false, emitted: null, missingCustomerFields: [], customerId: undefined };
 
   try {
     const token = await api.session.getSessionToken();
@@ -27,6 +28,7 @@ export const fetchInvoiceData = async (api: any): Promise<InvoiceState> => {
             edges { node { key value } }
           }
           customer {
+            id
             metafields(namespace: "invoice", first: 20) {
               edges { node { key value } }
             }
@@ -70,10 +72,12 @@ export const fetchInvoiceData = async (api: any): Promise<InvoiceState> => {
       }
     }
 
-    return { requested, emitted, missingCustomerFields };
+    const customerId = order.customer?.id;
+
+    return { requested, emitted, missingCustomerFields, customerId };
   } catch (error) {
     console.error('Errore fetchInvoiceData:', error);
-    return { requested: false, emitted: null, missingCustomerFields: [] };
+    return { requested: false, emitted: null, missingCustomerFields: [], customerId: undefined };
   }
 };
 
