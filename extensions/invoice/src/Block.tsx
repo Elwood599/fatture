@@ -78,7 +78,7 @@ const Block = () => {
               setLoading(false);
             }
           }}
-          isDisabled={requested || !api.order.customerId || loading}
+          isDisabled={requested || !api.order.customerId || missingCustomerFields.length > 0 || loading}
         >
         </Button>
       </POSBlockRow>
