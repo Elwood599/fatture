@@ -1,6 +1,6 @@
 import { Text, useApi, reactExtension, POSBlock, POSBlockRow, Badge, Button } from '@shopify/ui-extensions-react/point-of-sale';
 import { useEffect, useState, useRef } from 'react';
-import { fetchInvoiceData, InvoiceState } from '../../../app/invoiceApi';
+import { fetchInvoiceData, InvoiceState, requestInvoice } from '../../../app/invoiceApi';
 
 const Block = () => {
   const api = useApi<'pos.order-details.block.render'>();
@@ -12,8 +12,6 @@ const Block = () => {
   });
   const [loading, setLoading] = useState(true);
 
-  const lastCustomerId = useRef(api.order.customerId || null);
-
   const loadData = async () => {
     setLoading(true);
     const data = await fetchInvoiceData(api);
@@ -23,7 +21,7 @@ const Block = () => {
 
     useEffect(() => {
       loadData();
-    }, [api.order.id, invoiceState.customerId]);
+    }, [api.order.id, api.order.customerId]);
 
   const { requested, emitted, missingCustomerFields, customerId } = invoiceState;
 
@@ -60,6 +58,30 @@ const Block = () => {
           </POSBlockRow>
         </>
       )}
+      <POSBlockRow>
+        <Text>{'\u00A0'}</Text>
+      </POSBlockRow>
+      <POSBlockRow>
+        <Button
+          title="Richiedi fattura"
+          onPress={async () => {
+            setLoading(true);
+            api.toast.show('Attendere...', { duration: 3000 });
+            try {
+              await requestInvoice(api);
+              await loadData();
+              api.toast.show('Fattura richiesta correttamente', { duration: 10000 });
+            } catch (error) {
+              api.toast.show('Errore durante la richiesta fattura', { duration: 10000 });
+              console.error(error);
+            } finally {
+              setLoading(false);
+            }
+          }}
+          isDisabled={requested || !api.order.customerId || loading}
+        >
+        </Button>
+      </POSBlockRow>
 
       {requested === true && (
         <>

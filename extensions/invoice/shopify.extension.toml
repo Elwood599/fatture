@@ -10,9 +10,6 @@ description = "Richiedi fattura"
 
 # module: path to the file that contains your extension’s source code
 # target: string that describes where your extension appears in POS
-[[extensions.targeting]]
-module = "./src/Action.tsx"
-target = "pos.order-details.action.menu-item.render"
 
 [[extensions.targeting]]
 module = "./src/Block.tsx"
