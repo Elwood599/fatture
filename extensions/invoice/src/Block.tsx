@@ -64,6 +64,7 @@ const Block = () => {
       <POSBlockRow>
         <Button
           title="Richiedi fattura"
+          type='primary'
           onPress={async () => {
             setLoading(true);
             api.toast.show('Attendere...', { duration: 3000 });
@@ -82,27 +83,6 @@ const Block = () => {
         >
         </Button>
       </POSBlockRow>
-
-      {requested === true && (
-        <>
-          <POSBlockRow>
-            <Text>{'\u00A0'}</Text>
-          </POSBlockRow>
-          <POSBlockRow>
-            <Button
-              title="Stampa proforma"
-              onPress={async () => {
-                try {
-                  const url = `../../../app/${api.order.id}/proforma`;
-                  await api.print.print(url);
-                } catch (error) {
-                  console.error('Errore stampa proforma', error);
-                }
-              }}
-            />
-          </POSBlockRow>
-        </>
-      )}
     </POSBlock>
   );
 };
