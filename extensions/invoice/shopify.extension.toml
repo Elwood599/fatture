@@ -14,7 +14,3 @@ description = "Richiedi fattura"
 [[extensions.targeting]]
 module = "./src/Block.tsx"
 target = "pos.order-details.block.render"
-
-[[extensions.targeting]]
-module = "./src/PrintModal.tsx"
-target = "pos.order-details.action.render"
