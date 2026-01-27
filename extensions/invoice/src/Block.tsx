@@ -123,7 +123,7 @@ const Block = () => {
           </POSBlockRow>
           <POSBlockRow>
             <Button
-              title={printing ? "Caricamento..." : "Vedi proforma"}
+              title={printing ? "Caricamento..." : "Vedi fattura proforma"}
               onPress={handlePrint}
               isDisabled={printing || loading}
             />
