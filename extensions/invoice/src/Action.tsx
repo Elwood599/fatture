@@ -25,24 +25,8 @@ const MenuItem = () => {
     setPrinting(true);
 
     try {
-    
-      const token = await api.session.getSessionToken();
 
-      // 1. Ottieni URL
-      const response = await fetch(`/app/pos/${api.order.id}/proforma`, {
-        method: "GET",
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-      
-      if (!response.ok) throw new Error("Errore comunicazione server");
-      const data = await response.json();
-
-      if (data.error) throw new Error(data.error);
-      if (!data.url) throw new Error("URL di stampa mancante");
-
-      await api.storage.set('printUrl', data.url);
       await api.action.presentModal();
-
 
     } catch (error) {
       console.error('Errore stampa:', error);
