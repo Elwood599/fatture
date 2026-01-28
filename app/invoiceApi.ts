@@ -15,6 +15,17 @@ export const REQUIRED_CUSTOMER_FIELDS_COMPANY = [
   'sede_legale_provincia',
 ];
 
+export const CUSTOMER_FIELD_LABELS: Record<string, string> = {
+  customer_type: 'Tipo cliente',
+  codice_fiscale: 'Codice fiscale',
+  ragione_sociale: 'Ragione sociale',
+  partita_iva: 'Partita IVA',
+  sede_legale_via: 'Via sede legale',
+  sede_legale_cap: 'CAP sede legale',
+  sede_legale_citta: 'Città sede legale',
+  sede_legale_provincia: 'Provincia sede legale',
+};
+
 export const fetchInvoiceData = async (api: any): Promise<InvoiceState> => {
   if (!api.order.id) return { requested: false, emitted: null, missingCustomerFields: [], customerId: undefined };
 
@@ -64,10 +75,10 @@ export const fetchInvoiceData = async (api: any): Promise<InvoiceState> => {
 
       const customerType = customerMetafields['customer_type'];
 
-      if (!customerType || customerType.trim() === '') missingCustomerFields.push('Customer type');
-      else if (customerType === 'individual' && (!customerMetafields['codice_fiscale'] || customerMetafields['codice_fiscale'].trim() === '')) {
+      if (!customerType || customerType.trim() === '') missingCustomerFields.push('Tipo cliente');
+      else if (customerType === 'Individual' && (!customerMetafields['codice_fiscale'] || customerMetafields['codice_fiscale'].trim() === '')) {
         missingCustomerFields.push('codice_fiscale');
-      } else if (customerType === 'company') {
+      } else if (customerType === 'Company') {
         missingCustomerFields = REQUIRED_CUSTOMER_FIELDS_COMPANY.filter(key => !customerMetafields[key]?.trim());
       }
     }

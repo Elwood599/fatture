@@ -1,32 +1,56 @@
-import { Text, useApi, reactExtension, POSBlock, POSBlockRow, Badge, Button } from '@shopify/ui-extensions-react/point-of-sale';
-import { useEffect, useState, useRef } from 'react';
-import { fetchInvoiceData, InvoiceState, requestInvoice } from '../../../app/invoiceApi';
+import {
+  Text,
+  useApi,
+  reactExtension,
+  POSBlock,
+  POSBlockRow,
+  Badge,
+  Button
+} from '@shopify/ui-extensions-react/point-of-sale';
+import { useEffect, useState } from 'react';
+// Assumo che questo file esista come dal tuo snippet
+import { fetchInvoiceData, requestInvoice, InvoiceState, CUSTOMER_FIELD_LABELS } from '../../../app/invoiceApi';
 
 const Block = () => {
   const api = useApi<'pos.order-details.block.render'>();
-  const [invoiceState, setInvoiceState] = useState<InvoiceState>({
+  
+  // Stato per la gestione fattura
+  const [invoiceState, setInvoiceState] =
+  useState<InvoiceState>({
     requested: false,
     emitted: null,
     missingCustomerFields: [],
     customerId: undefined,
   });
+  
   const [loading, setLoading] = useState(true);
   const [printing, setPrinting] = useState(false);
 
+  // Caricamento dati iniziali
   const loadData = async () => {
     setLoading(true);
-    const data = await fetchInvoiceData(api);
-    setInvoiceState(data);
-    setLoading(false);
+    try {
+      const data = await fetchInvoiceData(api);
+      setInvoiceState(data);
+    } catch (e) {
+      console.error("Errore caricamento dati fattura", e);
+    } finally {
+      setLoading(false);
+    }
   };
 
-    useEffect(() => {
-      loadData();
-    }, [api.order.id, api.order.customerId]);
+  useEffect(() => {
+    loadData();
+  }, [api.order.id, api.order.customerId]);
 
-  const { requested, emitted, missingCustomerFields, customerId } = invoiceState;
-  
-    const handlePrint = async () => {
+  const { requested, emitted, missingCustomerFields } = invoiceState;
+  const readableMissingFields = missingCustomerFields.map(
+    field => CUSTOMER_FIELD_LABELS[field] ?? field.replace(/_/g, ' ')
+  );
+
+
+  // --- FUNZIONE DI STAMPA ROBUSTA (BASE64) ---
+  const handlePrint = async () => {
     setPrinting(true);
 
     try {
@@ -59,63 +83,69 @@ const Block = () => {
 
   return (
     <POSBlock>
+      {/* Stato Richiesta */}
       <POSBlockRow>
         <Text>{requested ? '✅ È stata richiesta la fattura' : '❌ Non è stata richiesta la fattura'}</Text>
       </POSBlockRow>
+      
+      {/* Stato Emissione 
       <POSBlockRow>
         <Text>{emitted ? '✅ La fattura è stata emessa' : '❌ La fattura non è stata emessa'}</Text>
-      </POSBlockRow>
+      </POSBlockRow> */}
 
+      {/* Warning: Manca Cliente */}
       {!api.order.customerId && (
         <>
           <POSBlockRow>
-            <Badge text="Azione necessaria per richiedere la fattura" variant="warning" />
+            <Badge text="Azione necessaria" variant="warning" />
           </POSBlockRow>
           <POSBlockRow>
-            <Text>La fattura non può essere richiesta perché l'ordine non ha un Cliente associato.</Text>
+            <Text>Ordine senza cliente associato.</Text>
           </POSBlockRow>
         </>
       )}
 
+      {/* Warning: Campi mancanti */}
       {missingCustomerFields.length > 0 && (
         <>
           <POSBlockRow>
-            <Badge text="Azione necessaria per richiedere la fattura" variant="warning" />
+            <Badge text="Dati mancanti" variant="warning" />
           </POSBlockRow>
-          <POSBlockRow>
-            <Text>La fattura non può essere richiesta perché mancano i seguenti dati del cliente:</Text>
-          </POSBlockRow>
-          <POSBlockRow>
-            <Text>- {missingCustomerFields.join('\n- ')}</Text>
-          </POSBlockRow>
+          {readableMissingFields.map((field, index) => (
+            <POSBlockRow key={index}>
+              <Text>• {field}</Text>
+            </POSBlockRow>
+          ))}
         </>
       )}
+
       <POSBlockRow>
         <Text>{'\u00A0'}</Text>
       </POSBlockRow>
+
+      {/* Bottone Richiedi Fattura */}
       <POSBlockRow>
         <Button
           title="Richiedi fattura"
-          type='primary'
           onPress={async () => {
             setLoading(true);
-            api.toast.show('Attendere...', { duration: 3000 });
+            api.toast.show('Richiesta in corso...', { duration: 3000 });
             try {
               await requestInvoice(api);
               await loadData();
-              api.toast.show('Fattura richiesta correttamente', { duration: 10000 });
+              api.toast.show('Fattura richiesta correttamente', { duration: 5000 });
             } catch (error) {
-              api.toast.show('Errore durante la richiesta fattura', { duration: 10000 });
+              api.toast.show('Errore richiesta fattura', { duration: 5000 });
               console.error(error);
             } finally {
               setLoading(false);
             }
           }}
           isDisabled={requested || !api.order.customerId || missingCustomerFields.length > 0 || loading}
-        >
-        </Button>
+        />
       </POSBlockRow>
-      
+
+      {/* Bottone Stampa (Visibile solo se richiesta) */}
       {requested === true && (
         <>
           <POSBlockRow>
@@ -130,7 +160,6 @@ const Block = () => {
           </POSBlockRow>
         </>
       )}
-
     </POSBlock>
   );
 };
