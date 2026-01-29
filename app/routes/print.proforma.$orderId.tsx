@@ -99,6 +99,14 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
             displayName
             email
             phone
+            defaultAddress {
+              address1
+              city
+              province
+              provinceCode
+              zip
+              country
+            }
             metafield_partita_iva: metafield(namespace: "invoice", key: "partita_iva") { value }
             metafield_codice_fiscale: metafield(namespace: "invoice", key: "codice_fiscale") { value }
             metafield_pec: metafield(namespace: "invoice", key: "pec") { value }
@@ -150,10 +158,17 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
                   }
                 }
                 taxLines {
-                  rate
+                  ratePercentage
                   title
                 }
                 discountAllocations {
+                  discountApplication {
+                      value {
+                        ... on PricingPercentageValue {
+                          percentage
+                        }
+                      }
+                    }
                   allocatedAmountSet {
                     shopMoney {
                       amount
@@ -161,6 +176,11 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
                   }
                 }
               }
+            }
+          }
+          totalDiscountsSet {
+            shopMoney {
+              amount
             }
           }
           subtotalPriceSet {
@@ -174,6 +194,9 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
               amount
               currencyCode
             }
+          }
+          taxLines {
+            ratePercentage
           }
           totalTaxSet {
             shopMoney {
@@ -192,6 +215,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
             formattedGateway
             amount
             status
+            createdAt
           }
         }
       }
@@ -291,6 +315,12 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
           name: order.customer?.displayName || `${order.customer?.firstName || ""} ${order.customer?.lastName || ""}`.trim() || null,
           email: order.customer?.email || null,
           phone: order.customer?.phone || null,
+          address: order.customer?.defaultAddress?.address1 || null,
+          city: order.customer?.defaultAddress?.city || null,
+          province: order.customer?.defaultAddress?.province || null,
+          provinceCode: order.customer?.defaultAddress?.provinceCode || null,
+          zip: order.customer?.defaultAddress?.zip || null,
+          country: order.customer?.defaultAddress?.country || null,
           metafields: {
             invoice: {
               customer_type: getInvoiceField('customer_type') || 'company',
@@ -334,13 +364,16 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
           final_price: edge.node.discountedUnitPriceSet.shopMoney.amount,
           tax_lines: edge.node.taxLines || [],
           line_level_discount_allocations: edge.node.discountAllocations || [],
+          percentage_discount: edge.node.discountAllocations || [],
           final_line_price: (
             parseFloat(edge.node.discountedUnitPriceSet.shopMoney.amount) *
             edge.node.quantity
           ).toFixed(2),
         })),
+        total_discount: order.totalDiscountsSet.shopMoney.amount,
         line_items_subtotal_price: order.subtotalPriceSet.shopMoney.amount,
         shipping_price: order.totalShippingPriceSet.shopMoney.amount,
+        tax_code: order.taxLines[0].ratePercentage || "",
         tax_price: order.totalTaxSet.shopMoney.amount,
         total_price: order.totalPriceSet.shopMoney.amount,
         discount_applications: [],
