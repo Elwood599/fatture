@@ -24,6 +24,7 @@ export const CUSTOMER_FIELD_LABELS: Record<string, string> = {
   sede_legale_cap: 'CAP sede legale',
   sede_legale_citta: 'Città sede legale',
   sede_legale_provincia: 'Provincia sede legale',
+  sdi_pec: 'SDI o PEC'
 };
 
 export const fetchInvoiceData = async (api: any): Promise<InvoiceState> => {
@@ -80,6 +81,12 @@ export const fetchInvoiceData = async (api: any): Promise<InvoiceState> => {
         missingCustomerFields.push('codice_fiscale');
       } else if (customerType === 'Company') {
         missingCustomerFields = REQUIRED_CUSTOMER_FIELDS_COMPANY.filter(key => !customerMetafields[key]?.trim());
+        const hasSdi = !!customerMetafields['sdi']?.trim();
+        const hasPec = !!customerMetafields['pec']?.trim();
+
+        if (!hasSdi && !hasPec) {
+          missingCustomerFields.push('sdi_pec');
+        }
       }
     }
 
