@@ -54,11 +54,12 @@ const Block = () => {
     setPrinting(true);
 
     try {
-    
+      
+      const APP_URL = "https://fatture-three.vercel.app";
       const token = await api.session.getSessionToken();
 
       // 1. Ottieni URL
-      const response = await fetch(`../../../app/pos/${api.order.id}/proforma`, {
+      const response = await fetch(`${APP_URL}/app/pos/${api.order.id}/proforma`, {
         method: "GET",
         headers: { "Authorization": `Bearer ${token}` }
       });

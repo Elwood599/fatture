@@ -32,7 +32,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
       .update(`${orderId}${shop}`)
       .digest("hex");
 
-    const printUrl = `/print/proforma/${orderId}?sig=${signature}&shop=${shop}`;
+    const printUrl = `${appUrl}/print/proforma/${orderId}?sig=${signature}&shop=${shop}`;
 
     // 4. Ritorna JSON con gli headers CORS
     return json({ url: printUrl }, { headers });
