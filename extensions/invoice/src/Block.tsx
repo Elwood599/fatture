@@ -58,7 +58,7 @@ const Block = () => {
       const token = await api.session.getSessionToken();
 
       // 1. Ottieni URL
-      const response = await fetch(`/app/pos/${api.order.id}/proforma`, {
+      const response = await fetch(`../../../app/pos/${api.order.id}/proforma`, {
         method: "GET",
         headers: { "Authorization": `Bearer ${token}` }
       });
