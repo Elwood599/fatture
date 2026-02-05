@@ -252,7 +252,7 @@ export default function Index() {
           <Badge>{o.displayFulfillmentStatus}</Badge>
         </IndexTable.Cell>
         <IndexTable.Cell>{o.lineItems.edges.length}</IndexTable.Cell>
-        <IndexTable.Cell>{o.fulfillments[0].location.name}</IndexTable.Cell>
+        <IndexTable.Cell>{o.fulfillments?.[0]?.location?.name}</IndexTable.Cell>
         <IndexTable.Cell>
           {o.emitted?.value === "true" ? <Badge tone="success">Emitted</Badge> : <Badge tone="warning">Not emitted</Badge>}
         </IndexTable.Cell>
